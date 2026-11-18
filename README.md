@@ -4,6 +4,8 @@ Petit site qui convertit des dates en français écrit : `1/1/26` devient « pre
 
 Tout fonctionne dans le navigateur, avec un seul fichier (`index.html`). Aucune dépendance, aucun serveur, aucune donnée envoyée.
 
+Exemple sur https://mimo38.github.io/date-lettre/
+
 ## Utilisation
 
 Saisissez une date par ligne (ou séparez-les par des points-virgules). Le résultat s’affiche en direct, avec un bouton pour copier chaque ligne ou tous les résultats.
