@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dates en toutes lettres</title>
+<meta name="description" content="Convertit une ou plusieurs dates en toutes lettres, en français : 1/1/26 devient premier janvier deux mille vingt-six.">
+<style>
+:root{--bg:#e9eef0;--card:#f9fbfa;--ink:#17233b;--mute:#5d6b7e;--line:#c5d0d6;--acc:#1f5f8b;--err:#a4262c;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#101820;--card:#17222d;--ink:#e6edf3;--mute:#93a4b5;--line:#2a3a49;--acc:#7ab8e6;--err:#ff9a95;color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:32px 20px 56px}
+h1{font:italic 400 clamp(28px,5vw,42px)/1.15 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;margin:0 0 6px}
+.sub{color:var(--mute);margin:0 0 24px;max-width:60ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px}
+label{font-weight:600;font-size:14px}
+textarea{width:100%;min-height:128px;margin-top:6px;padding:10px 12px;font:16px/1.5 ui-monospace,Menlo,Consolas,monospace;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;resize:vertical}
+textarea:focus,select:focus,input:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+button{font:inherit;font-size:14px;padding:6px 12px;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:4px;cursor:pointer}
+button:hover{border-color:var(--acc);color:var(--acc)}
+button.p{background:var(--acc);border-color:var(--acc);color:var(--card)}
+button.p:hover{color:var(--card);filter:brightness(1.1)}
+details{margin-top:16px}
+summary{cursor:pointer;font-weight:600;font-size:14px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 18px;margin-top:12px}
+.opts div{display:flex;flex-direction:column;gap:4px;font-size:14px}
+.opts label{font-weight:400;color:var(--mute);font-size:13px}
+.opts .ck{flex-direction:row;align-items:center;gap:8px}
+.opts .ck label{color:var(--ink);font-size:14px}
+select,input[type=number]{font:inherit;font-size:14px;padding:5px 6px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;width:100%}
+#out{margin-top:24px;display:grid;gap:14px}
+.row{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:4px;padding:12px 16px}
+.row.bad{border-left-color:var(--err)}
+.src{font:13px ui-monospace,Menlo,Consolas,monospace;color:var(--mute);margin-bottom:6px;overflow-wrap:anywhere}
+.res{font:italic 400 clamp(20px,3.4vw,26px)/1.4 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;padding-bottom:6px;border-bottom:1px dotted var(--mute);overflow-wrap:anywhere}
+.row.bad .res{font:600 15px/1.4 system-ui,sans-serif;color:var(--err);border:0;padding:0}
+.row button{margin-top:10px;font-size:13px;padding:3px 10px}
+.empty{color:var(--mute)}
+footer{margin-top:32px;color:var(--mute);font-size:13px}
+</style>
+</head>
+<body>
+<main>
+<h1>Dates en toutes lettres</h1>
+<p class="sub">Saisissez une date par ligne, dans le format que vous voulez. Le résultat se met à jour en direct. Tout se passe dans votre navigateur, rien n’est envoyé.</p>
+
+<section class="card">
+  <label for="in">Dates à convertir</label>
+  <textarea id="in" spellcheck="false" placeholder="1/1/26&#10;25-12-1999&#10;14 juillet 1789&#10;2024-02-29">1/1/26
+25/12/1999
+14 juillet 1789
+29/02/2024</textarea>
+  <div class="bar">
+    <button type="button" id="today">Ajouter aujourd’hui</button>
+    <button type="button" id="clear">Effacer</button>
+    <button type="button" id="copyall" class="p">Copier tous les résultats</button>
+  </div>
+
+  <details>
+    <summary>Options</summary>
+    <div class="opts">
+      <div><label for="ord">Ordre des dates numériques</label>
+        <select id="ord"><option value="dmy">jour/mois/année (1/2/26 = 1er février)</option><option value="mdy">mois/jour/année (1/2/26 = 2 janvier)</option></select></div>
+      <div><label for="piv">Année à 2 chiffres : 20xx jusqu’à</label>
+        <input id="piv" type="number" min="0" max="99" value="50"></div>
+      <div><label for="var">Variante du français</label>
+        <select id="var"><option value="fr">France (soixante-dix, quatre-vingt-dix)</option><option value="be">Belgique (septante, nonante)</option><option value="ch">Suisse romande (septante, huitante, nonante)</option></select></div>
+      <div><label for="ort">Orthographe</label>
+        <select id="ort"><option value="c">Classique (vingt-six, vingt et un)</option><option value="r">Rectifiée de 1990 (tirets partout)</option></select></div>
+      <div><label for="ys">Style des années</label>
+        <select id="ys"><option value="mille">deux mille, mille neuf cent</option><option value="mil">mil neuf cent (usage ancien)</option><option value="cent">dix-neuf cent (années 1100 à 1999)</option></select></div>
+      <div class="ck"><input type="checkbox" id="prem" checked><label for="prem">Écrire « premier » (sinon « un »)</label></div>
+      <div class="ck"><input type="checkbox" id="le"><label for="le">Commencer par « le »</label></div>
+      <div class="ck"><input type="checkbox" id="wd"><label for="wd">Ajouter le jour de la semaine</label></div>
+      <div class="ck"><input type="checkbox" id="cap"><label for="cap">Majuscule initiale</label></div>
+      <div class="ck"><input type="checkbox" id="num"><label for="num">Rappeler la date en chiffres entre parenthèses</label></div>
+    </div>
+  </details>
+</section>
+
+<div id="out" aria-live="polite"></div>
+
+<footer>Formats reconnus : 1/1/26, 01.01.2026, 1-1-26, 2026-01-01, 01012026, 010126, « 1er janvier 2026 », « jeudi 1 janv. 26 », « le 14 juillet 1789 ». Les dates impossibles (31 février, 29 février d’une année non bissextile) sont signalées. Années de 1 à 9999.</footer>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const U = ["zéro","un","deux","trois","quatre","cinq","six","sept","huit","neuf","dix","onze","douze","treize","quatorze","quinze","seize","dix-sept","dix-huit","dix-neuf"];
+const T = ["","","vingt","trente","quarante","cinquante","soixante"];
+const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+const MN = {janvier:1,janv:1,fevrier:2,fevr:2,fev:2,mars:3,avril:4,avr:4,mai:5,juin:6,juillet:7,juil:7,aout:8,septembre:9,sept:9,sep:9,octobre:10,oct:10,novembre:11,nov:11,decembre:12,dec:12};
+const norm = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+/* ---------- nombres en lettres ---------- */
+function speller(o) {
+  const sp = o.rect ? "-" : " ";
+  const et = o.rect ? "-et-" : " et ";
+  function b100(n, fin) {
+    if (n < 20) return U[n];
+    const t = Math.floor(n / 10), u = n % 10;
+    let base;
+    if (t === 7) {
+      if (o.v === "fr") return u === 1 ? "soixante" + et + "onze" : "soixante-" + U[10 + u];
+      base = "septante";
+    } else if (t === 8) {
+      if (o.v === "ch") base = "huitante";
+      else return u === 0 ? "quatre-vingt" + (fin ? "s" : "") : "quatre-vingt-" + U[u];
+    } else if (t === 9) {
+      if (o.v === "fr") return "quatre-vingt-" + U[10 + u];
+      base = "nonante";
+    } else base = T[t];
+    return u === 0 ? base : u === 1 ? base + et + "un" : base + "-" + U[u];
+  }
+  function b1000(n, fin) {
+    const h = Math.floor(n / 100), r = n % 100;
+    if (!h) return b100(r, fin);
+    const s = h === 1 ? "cent" : U[h] + sp + "cent" + (!r && fin ? "s" : "");
+    return r ? s + sp + b100(r, fin) : s;
+  }
+  return {
+    day: d => d === 1 ? (o.prem ? "premier" : "un") : b100(d, true),
+    year(n) {
+      if (o.ys === "cent" && n >= 1100 && n <= 1999) {
+        const h = Math.floor(n / 100), r = n % 100;
+        return U[h] + sp + "cent" + (r ? sp + b100(r, true) : "s");
+      }
+      const th = Math.floor(n / 1000), r = n % 1000;
+      if (!th) return b1000(r, true);
+      const head = th === 1 ? (o.ys === "mil" ? "mil" : "mille") : U[th] + sp + "mille";
+      return r ? head + sp + b1000(r, true) : head;
+    }
+  };
+}
+
+/* ---------- lecture des dates ---------- */
+function fullYear(s, o) {
+  return s.length <= 2 ? (+s <= o.piv ? 2000 + +s : 1900 + +s) : +s;
+}
+function parse(line, o) {
+  const t = norm(line).replace(/\s+/g, " ").trim();
+  let r, y, m, d;
+  if ((r = /^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})$/.exec(t))) { y = +r[1]; m = +r[2]; d = +r[3]; }
+  else if ((r = /^(\d{1,2})[\/.\-\s](\d{1,2})[\/.\-\s](\d{4}|\d{2})$/.exec(t)) || (r = /^(\d{2})(\d{2})(\d{4}|\d{2})$/.exec(t))) {
+    const a = +r[1], b = +r[2];
+    [d, m] = o.ord === "mdy" ? [b, a] : [a, b];
+    if (m > 12 && d <= 12) [d, m] = [m, d];
+    y = fullYear(r[3], o);
+  } else {
+    const s = t.replace(/\./g, "").replace(/^le /, "").replace(/^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) ?,? ?/, "").replace(/^le /, "");
+    if (!(r = /^(\d{1,2}) ?(?:er|e|eme)? ([a-z]+) (\d{2,4})$/.exec(s))) throw "Format non reconnu";
+    d = +r[1]; m = MN[r[2]]; y = fullYear(r[3], o);
+    if (!m) throw "Mois inconnu : « " + r[2] + " »";
+  }
+  if (y < 1 || y > 9999) throw "Année hors limites (1 à 9999)";
+  if (m < 1 || m > 12) throw "Le mois " + m + " n’existe pas";
+  const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  const dim = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1];
+  if (d < 1 || d > dim) throw d + " " + MOIS[m - 1] + " " + y + " n’existe pas (" + MOIS[m - 1] + " compte " + dim + " jours)";
+  return { y, m, d };
+}
+
+/* ---------- assemblage ---------- */
+function convert(line, o) {
+  const { y, m, d } = parse(line, o);
+  const sp = speller(o);
+  const dt = new Date(Date.UTC(2000, m - 1, d)); dt.setUTCFullYear(y);
+  let s = sp.day(d) + " " + MOIS[m - 1] + " " + sp.year(y);
+  if (o.wd) s = JOURS[dt.getUTCDay()] + " " + s;
+  if (o.le) s = "le " + s;
+  if (o.cap) s = s[0].toUpperCase() + s.slice(1);
+  if (o.num) s += " (" + String(d).padStart(2, "0") + "/" + String(m).padStart(2, "0") + "/" + y + ")";
+  return s;
+}
+
+/* ---------- interface ---------- */
+const opts = () => ({
+  ord: $("ord").value, piv: Math.min(99, Math.max(0, +$("piv").value || 0)), v: $("var").value,
+  rect: $("ort").value === "r", ys: $("ys").value,
+  prem: $("prem").checked, le: $("le").checked, wd: $("wd").checked, cap: $("cap").checked, num: $("num").checked
+});
+let results = [];
+async function copy(text, btn) {
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) { const a = document.createElement("textarea"); a.value = text; document.body.append(a); a.select(); document.execCommand("copy"); a.remove(); }
+  const old = btn.textContent; btn.textContent = "Copié"; setTimeout(() => btn.textContent = old, 1200);
+}
+function render() {
+  const o = opts(), out = $("out");
+  out.textContent = ""; results = [];
+  const lines = $("in").value.split(/\n|;/).map(l => l.trim()).filter(Boolean);
+  if (!lines.length) { const p = document.createElement("p"); p.className = "empty"; p.textContent = "Saisissez une date pour voir le résultat."; out.append(p); return; }
+  for (const l of lines) {
+    const row = document.createElement("div"), src = document.createElement("div"), res = document.createElement("div");
+    src.className = "src"; src.textContent = l; res.className = "res"; row.className = "row";
+    row.append(src, res);
+    try {
+      const txt = convert(l, o); res.textContent = txt; results.push(txt);
+      const b = document.createElement("button"); b.type = "button"; b.textContent = "Copier";
+      b.onclick = () => copy(txt, b); row.append(b);
+    } catch (e) { row.classList.add("bad"); res.textContent = typeof e === "string" ? e : "Erreur de lecture"; }
+    out.append(row);
+  }
+}
+document.querySelectorAll("textarea,select,input").forEach(el => el.addEventListener("input", render));
+$("today").onclick = () => {
+  const n = new Date(), s = String(n.getDate()).padStart(2, "0") + "/" + String(n.getMonth() + 1).padStart(2, "0") + "/" + n.getFullYear();
+  const v = $("in").value.replace(/\s+$/, ""); $("in").value = (v ? v + "\n" : "") + s; render();
+};
+$("clear").onclick = () => { $("in").value = ""; render(); $("in").focus(); };
+$("copyall").onclick = e => results.length && copy(results.join("\n"), e.target);
+render();
+</script>
+</body>
+</html>
